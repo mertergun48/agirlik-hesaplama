@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metal Hesaplama Paneli</title>
+    <style>
+        :root {
+            --primary-color: #3c66e3;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { color: #333; margin-bottom: 30px; }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            max-width: 1000px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 350px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover { transform: translateY(-5px); }
+
+        h2 {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px;
+            margin: -25px -25px 20px -25px;
+            border-radius: 15px 15px 0 0;
+            font-size: 1.2rem;
+        }
+
+        .input-group { margin-bottom: 15px; text-align: left; }
+        
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #666; font-size: 14px; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus { border-color: var(--primary-color); outline: none; }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 16px;
+        }
+
+        .value { font-weight: bold; color: var(--primary-color); }
+        
+        #final-res { font-size: 24px; color: #2ecc71; text-align: center; display: block; }
+
+    </style>
+</head>
+<body>
+
+    <h1>Metal Hesaplama Araçları</h1>
+
+    <div class="container">
+        
+        <div class="card">
+            <h2>AĞIRLIK TOLERANS</h2>
+            <div class="input-group">
+                <label>EBAT (mm)</label>
+                <input id="ebat1" type="number" placeholder="Örn: 12">
+            </div>
+            <div class="input-group">
+                <label>KİLO (kg)</label>
+                <input id="kilo1" type="number" placeholder="Örn: 50">
+            </div>
+            <div class="input-group">
+                <label>BOY (mt)</label>
+                <input id="boy1" type="number" placeholder="Örn: 6">
+            </div>
+            <button onclick="hesaplaTolerans()">HESAPLA</button>
+
+            <div class="result-box">
+                <div class="result-item">Nominal: <span id="nominal1" class="value">-</span></div>
+                <div class="result-item">KG/M: <span id="kgm1" class="value">-</span></div>
+                <div class="result-item">Fark %: <span id="agirlik1" class="value">-</span></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>AĞIRLIK FORMÜLÜ</h2>
+            <div class="input-group">
+                <label>Toplam Ağırlık (kg)</label>
+                <input id="agirlik2" type="number" placeholder="Değeri girin">
+            </div>
+            <div class="input-group">
+                <label>Toplam Boy (mt)</label>
+                <input id="boy2" type="number" placeholder="Değeri girin">
+            </div>
+            <button onclick="hesaplaFormul()">HESAPLA</button>
+
+            <div class="result-box">
+                <p style="margin:0; font-size:14px; color:#666;">Hesaplanan Değer:</p>
+                <span id="final-res" class="value">-</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const nominalTablo = {
+            8:0.395, 10:0.617, 12:0.888, 14:1.210, 16:1.580, 18:2.000, 
+            20:2.470, 22:2.985, 24:3.550, 25:3.850, 26:4.168, 28:4.830, 
+            30:5.550, 32:6.310, 36:8.000, 40:9.860
+        };
+
+        function hesaplaTolerans(){
+            let ebat = document.getElementById("ebat1").value;
+            let kilo = parseFloat(document.getElementById("kilo1").value);
+            let boy = parseFloat(document.getElementById("boy1").value);
+            let nominal = nominalTablo[ebat];
+
+            if(!nominal || isNaN(kilo) || isNaN(boy)){
+                alert("Lütfen geçerli değerler girin (Ebat tabloda olmalıdır)");
+                return;
+            }
+
+            let kgm = kilo / boy;
+            let agirlik = (kgm / nominal * 100) - 100;
+
+            document.getElementById("nominal1").innerText = nominal.toFixed(3);
+            document.getElementById("kgm1").innerText = kgm.toFixed(3);
+            document.getElementById("agirlik1").innerText = "% " + agirlik.toFixed(2);
+        }
+
+        function hesaplaFormul(){
+            let agirlik = parseFloat(document.getElementById("agirlik2").value);
+            let boy = parseFloat(document.getElementById("boy2").value);
+
+            if(isNaN(agirlik) || isNaN(boy) || boy === 0){
+                alert("Lütfen geçerli ağırlık ve boy giriniz");
+                return;
+            }
+
+            let sonuc = 12.74 * Math.sqrt(agirlik / boy);
+            document.getElementById("final-res").innerText = sonuc.toFixed(2);
+        }
+    </script>
+</body>
+</html>
